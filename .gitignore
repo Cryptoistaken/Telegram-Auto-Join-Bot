@@ -4,3 +4,4 @@ data/.env
 data/sessions/sessions_info.json
 data/sessions/joined_channels.json
 data/logs/error_log.txt
+package-lock.json
