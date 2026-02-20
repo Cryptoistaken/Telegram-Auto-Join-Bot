@@ -1,25 +1,42 @@
+<div align="center">
+
 # Telegram Auto Join Bot
 
-A single-file Telegram bot for managing multiple Telegram accounts and automating channel or group joining. Sessions are created and managed entirely from within the bot — no external scripts required.
+**Manage multiple Telegram accounts and automate channel joining — entirely from within your bot.**
+
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Telegraf](https://img.shields.io/badge/Telegraf-4.16-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://telegraf.js.org)
+[![GramJS](https://img.shields.io/badge/GramJS-2.26-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://gram.js.org)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+
+[Installation](#installation) · [Configuration](#configuration) · [Usage](#usage) · [Data Files](#data-files) · [Security](#security)
+
+</div>
+
+---
+
+## Overview
+
+Telegram Auto Join Bot is a self-contained, single-file Node.js bot that lets you manage any number of Telegram user accounts and mass-join channels or groups across all of them simultaneously. Everything — account creation, OTP verification, 2FA, joining, leaving — happens inside the Telegram bot interface. No external scripts, no command line input.
 
 ---
 
 ## Features
 
-- **In-bot session creation** — add Telegram accounts directly through the bot with OTP and optional 2FA support
-- **Continuous account onboarding** — after adding one account the bot immediately prompts for the next without returning to the menu
-- **Auto phone detection** — send a phone number at any time and the bot starts the session creation flow automatically
-- **Multi-session joining** — join any channel or group across all sessions simultaneously with a single command
-- **Confirmation before joining** — the bot shows a preview with session count before executing any join
-- **Duplicate link filtering** — sending the same link multiple times in one message is deduplicated automatically
-- **Leave all channels** — leave every tracked channel and group across all sessions with one button
-- **Join delay** — configurable delay between each account action to reduce the risk of account restrictions
-- **Leave delay** — 2-second pause between each channel leave within a session
-- **Paginated session list** — sessions displayed 5 per page with Back and Next navigation
-- **Paginated joined list** — joined channels displayed 10 per page with Back and Next navigation
-- **Persistent storage** — all session data, joined channel records, and session metadata stored in flat JSON files under `/data`
-- **Error logging** — background errors written to `/data/logs/error_log.txt` with deduplication, never printed to the terminal
-- **Clean terminal output** — timestamped log lines with consistent level labels, no noise from internal library logs
+|                         |                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| In-bot session creation | Add Telegram accounts through the bot with full OTP and 2FA support            |
+| Continuous onboarding   | After saving one account the bot immediately asks for the next                 |
+| Auto phone detection    | Send a phone number at any time — the bot starts the flow automatically        |
+| Multi-session joining   | Join any channel or group across all accounts with one confirmation            |
+| Pre-join confirmation   | Preview the channel and session count before any action is taken               |
+| Duplicate filtering     | Multiple identical links in one message are deduplicated automatically         |
+| Leave all               | Leave every tracked channel across all sessions with one button                |
+| Configurable delays     | Adjustable join delay per account and fixed leave delay to reduce restrictions |
+| Paginated lists         | Sessions (5 per page) and joined channels (10 per page) with Back / Next       |
+| Persistent storage      | JSON-based storage under `/data` — no database required                        |
+| Error logging           | Background errors written to a log file, never printed to the terminal         |
+| Clean terminal output   | Timestamped, level-labelled log lines — zero noise from internal libraries     |
 
 ---
 
@@ -27,37 +44,37 @@ A single-file Telegram bot for managing multiple Telegram accounts and automatin
 
 ```
 project/
-├── index.js
+├── index.js                   # Entire application — single file
 └── data/
-    ├── .env
-    ├── sessions/
-    │   └── *.session
-    ├── joined_channels.json
-    ├── sessions_info.json
+    ├── .env                   # Environment variables (create from .env.example)
+    ├── .env.example           # Template for environment variables
+    ├── sessions/              # Auto-created — stores .session files per account
+    ├── joined_channels.json   # Auto-created — tracks joined channels per session
+    ├── sessions_info.json     # Auto-created — stores account metadata
     └── logs/
-        └── error_log.txt
+        └── error_log.txt      # Auto-created — background error output
 ```
 
-The `data/` directory and all subdirectories are created automatically on first run.
+> All directories and JSON files are created automatically on first run. Only `data/.env` needs to be created manually.
 
 ---
 
 ## Requirements
 
-- Node.js 18 or higher
-- A Telegram bot token from [@BotFather](https://t.me/BotFather)
-- A Telegram API ID and API Hash from [my.telegram.org](https://my.telegram.org)
-- Your Telegram user ID (available from [@userinfobot](https://t.me/userinfobot))
+- **Node.js** 18 or higher — [nodejs.org](https://nodejs.org)
+- **Bot token** — create a bot via [@BotFather](https://t.me/BotFather)
+- **API credentials** — obtain `API_ID` and `API_HASH` from [my.telegram.org](https://my.telegram.org)
+- **Your user ID** — get it from [@userinfobot](https://t.me/userinfobot)
 
 ---
 
 ## Installation
 
-**1. Clone or download the project**
+**1. Clone the repository**
 
 ```bash
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/Cryptoistaken/Telegram-Auto-Join-Bot.git
+cd Telegram-Auto-Join-Bot
 ```
 
 **2. Install dependencies**
@@ -66,13 +83,14 @@ cd <project-directory>
 npm install
 ```
 
-**3. Create the data directory and environment file**
+**3. Set up your environment**
 
 ```bash
 mkdir data
+cp data/.env.example data/.env
 ```
 
-Create `data/.env` with the following content:
+Then open `data/.env` and fill in your values:
 
 ```env
 BOT_TOKEN=your_bot_token_here
@@ -88,136 +106,128 @@ JOIN_DELAY_SECONDS=3
 npm start
 ```
 
-For development with auto-restart on file changes:
-
 ```bash
-npm run dev
+npm run dev      # auto-restarts on file changes (uses nodemon)
 ```
 
 ---
 
-## Environment Variables
+## Configuration
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `BOT_TOKEN` | Yes | — | Telegram bot token from @BotFather |
-| `AUTHORIZED_USER_ID` | Yes | — | Your Telegram user ID — only this user can operate the bot |
-| `API_ID` | Yes | — | API ID from my.telegram.org |
-| `API_HASH` | Yes | — | API Hash from my.telegram.org |
-| `JOIN_DELAY_SECONDS` | No | `3` | Seconds to wait between each account when joining a channel |
+| Variable             | Required | Default | Description                                               |
+| -------------------- | :------: | :-----: | --------------------------------------------------------- |
+| `BOT_TOKEN`          |   Yes    |    —    | Bot token from @BotFather                                 |
+| `AUTHORIZED_USER_ID` |   Yes    |    —    | Your Telegram user ID — only this account can use the bot |
+| `API_ID`             |   Yes    |    —    | API ID from my.telegram.org                               |
+| `API_HASH`           |   Yes    |    —    | API Hash from my.telegram.org                             |
+| `JOIN_DELAY_SECONDS` |    No    |   `3`   | Delay in seconds between each account when joining        |
 
 ---
 
 ## Usage
 
-### Starting the bot
+Send `/start` to open the main menu.
 
-Send `/start` to your bot in Telegram. The main menu will appear with the following options.
-
----
-
-### Adding a session
-
-Press **Add Session** or simply send a phone number directly to the bot.
-
-The bot will:
-1. Ask for the phone number (with or without `+`, e.g. `+8801234567890` or `8801234567890`)
-2. Send a verification code to that Telegram account
-3. Ask you to forward the code
-4. Ask for the 2FA password if enabled on the account
-5. Save the session using the account's display name as the session name — accounts without a display name are saved as `Account 1`, `Account 2`, and so on
-
-After each session is saved the bot immediately asks whether to add another account. Send the next phone number or press **Done** to return to the menu.
+```
+Sessions      Add Session
+Join Channel  Joined List
+Leave All     Delete Session
+```
 
 ---
 
-### Joining a channel or group
+### Adding an Account
 
-Send any channel or group link directly to the bot:
+Press **Add Session** or send a phone number directly — the bot detects it automatically.
+
+```
+Step 1 — Phone number    +8801234567890  or  8801234567890
+Step 2 — Verification    Enter the code Telegram sends to the account
+Step 3 — 2FA (if set)    Enter the account password if prompted
+```
+
+The session is named after the account's Telegram display name. If the account has no name it is saved as `Account 1`, `Account 2`, etc. If a session with that name already exists, the last 4 digits of the phone number are appended.
+
+After saving, the bot immediately asks for the next phone number. Send one to continue or press **Done** to return to the menu.
+
+---
+
+### Joining a Channel or Group
+
+Send one or more links directly to the bot:
 
 ```
 https://t.me/channelname
 @channelname
 ```
 
-You can also send multiple links in one message, one per line. Duplicates are filtered automatically. The bot will show a confirmation for each unique link showing how many sessions are available, then join with all sessions once you confirm.
+Multiple links work — send them in one message, one per line. Duplicates are stripped. The bot shows a confirmation for each unique link before joining.
 
-If a channel was already joined by one or more sessions, the bot will indicate which sessions joined it and ask whether to force join with all sessions.
-
----
-
-### Viewing sessions
-
-Press **Sessions** to see a paginated list of all saved sessions. Each entry shows:
-
-- Session name
-- Phone number
-- Display name
-- Username
-- Date created
-- Number of channels joined
-
-Use **Next** and **Back** to navigate. 5 sessions are shown per page.
+If a link was already joined by some sessions, the bot shows which ones and asks to force join with all sessions.
 
 ---
 
-### Viewing joined channels
+### Viewing Sessions
 
-Press **Joined List** to see all channels and groups that have been joined, displayed as `[SessionName] link`. Use **Next** and **Back** to navigate. 10 entries are shown per page.
-
----
-
-### Leaving all channels
-
-Press **Leave All** to see a summary of how many tracked channels exist across how many sessions. Confirm to proceed. Each session will leave all its tracked channels with a 2-second delay between each one.
+Press **Sessions** for a paginated list. Each entry includes phone number, display name, username, creation date, and joined channel count. Navigate with **Next** and **Back** — 5 per page.
 
 ---
 
-### Deleting a session
+### Viewing Joined Channels
 
-Press **Delete Session** and select the session to remove. The session file, its entry in the sessions info file, and its joined channel records are all deleted.
+Press **Joined List** for a flat paginated list in `[Session] link` format. 10 entries per page with **Next** and **Back** navigation.
+
+---
+
+### Leaving All Channels
+
+Press **Leave All** for a summary of tracked channels across all sessions. Confirm to proceed. A 2-second delay is applied between each channel leave per session.
+
+---
+
+### Deleting a Session
+
+Press **Delete Session** and select the account to remove. The session file, metadata, and joined channel records for that session are all permanently deleted.
 
 ---
 
 ## Session Naming
 
-Session file names are derived automatically from the Telegram account's display name:
+| Condition                   | Name assigned                         |
+| --------------------------- | ------------------------------------- |
+| Account has a display name  | `First Last`                          |
+| Account has no display name | `Account 1`, `Account 2`, …           |
+| Name already taken          | `First Last (last 4 digits of phone)` |
 
-| Situation | Session name |
-|---|---|
-| Account has first and/or last name | `First Last` |
-| Account has no display name | `Account 1`, `Account 2`, ... |
-| A session with that name already exists | `First Last (last 4 digits of phone)` |
-
-Invalid filename characters are replaced with `-`.
+Characters invalid in filenames are replaced with `-`.
 
 ---
 
 ## Data Files
 
-### `data/sessions/*.session`
+#### `data/sessions/*.session`
 
-Raw Telegram session strings. Each file represents one authenticated Telegram account. These files are sensitive — do not share them.
+Serialized MTProto session strings. One file per account. These are authentication credentials — handle them accordingly.
 
-### `data/sessions_info.json`
+#### `data/sessions_info.json`
 
-Metadata for each session including phone number, display name, username, Telegram user ID, and creation timestamp.
+Metadata per session: phone number, Telegram user ID, display name, username, and creation timestamp.
 
-### `data/joined_channels.json`
+#### `data/joined_channels.json`
 
-A record of every channel and group joined through the bot, grouped by session name. Used to track what to leave when using Leave All.
+All channels and groups joined through the bot, grouped by session name. This is the source of truth for the Leave All feature.
 
-### `data/logs/error_log.txt`
+#### `data/logs/error_log.txt`
 
-Background and library-level errors are written here rather than printed to the terminal. Repeated identical errors are deduplicated with a counter.
+Library-level and background errors routed here instead of the terminal. Consecutive identical errors are collapsed with a repeat counter.
 
 ---
 
-## Security Notes
+## Security
 
-- Only the user whose ID matches `AUTHORIZED_USER_ID` can interact with the bot. All other users receive an unauthorized response.
-- Session files in `data/sessions/` contain full authentication credentials for each Telegram account. Treat them with the same care as passwords.
-- Do not commit the `data/` directory to version control. Add it to `.gitignore`.
+- Only the user matching `AUTHORIZED_USER_ID` can interact with the bot. Everyone else is silently rejected.
+- Session files are equivalent to logged-in credentials. Never share or commit them.
+- Add the following to `.gitignore` before pushing:
 
 ```gitignore
 data/
@@ -228,9 +238,17 @@ node_modules/
 
 ## Dependencies
 
-| Package | Version | Purpose |
-|---|---|---|
-| `telegraf` | ^4.16.3 | Telegram Bot API framework |
+| Package    | Version  | Role                                       |
+| ---------- | -------- | ------------------------------------------ |
+| `telegraf` | ^4.16.3  | Telegram Bot API framework                 |
 | `telegram` | ^2.26.21 | MTProto client for user account operations |
-| `dotenv` | ^17.3.1 | Environment variable loading |
-| `nodemon` | ^3.1.4 | Dev dependency for auto-restart |
+| `dotenv`   | ^17.3.1  | Environment variable loading               |
+| `nodemon`  | ^3.1.4   | Dev — auto-restart on change               |
+
+---
+
+<div align="center">
+
+Made by [Cryptoistaken](https://github.com/Cryptoistaken)
+
+</div>
